@@ -2,7 +2,6 @@ name: Deploy Clearstay Site & Live Briefings Feed
 
 on:
   schedule:
-    # Auto-refresh global static snapshot every 6 hours ($0/mo)
     - cron: "0 */6 * * *"
   workflow_dispatch: {}
   push:
@@ -19,10 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,7 +34,6 @@ jobs:
           mkdir -p dist
           cp -r site/* dist/
           touch dist/.nojekyll
-          # Fetch previous live snapshot if available so transient upstream errors keep last-known-good sections
           curl -fsSL "https://rydlewiczc-cpu.github.io/clearstay-web/snapshot-v1.json" -o /tmp/prev-snapshot.json || true
           if [ -s /tmp/prev-snapshot.json ]; then
             python3 feed/build_snapshot.py --previous /tmp/prev-snapshot.json --out dist/snapshot-v1.json
@@ -52,6 +47,13 @@ jobs:
         with:
           path: dist
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

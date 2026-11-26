@@ -72,10 +72,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  update-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -110,7 +107,7 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Rebuild snapshot-v1.json and deploy immediately to GitHub Pages
+      - name: Rebuild snapshot-v1.json
         run: |
           mkdir -p dist
           cp -r site/* dist/
@@ -127,6 +124,13 @@ jobs:
         with:
           path: dist
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
