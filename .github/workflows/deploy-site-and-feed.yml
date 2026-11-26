@@ -1,0 +1,57 @@
+name: Deploy Clearstay Site & Live Briefings Feed
+
+on:
+  schedule:
+    # Auto-refresh global static snapshot every 6 hours ($0/mo)
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: clearstay-pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Assemble site & build live snapshot-v1.json
+        run: |
+          mkdir -p dist
+          cp -r site/* dist/
+          touch dist/.nojekyll
+          # Fetch previous live snapshot if available so transient upstream errors keep last-known-good sections
+          curl -fsSL "https://rydlewiczc-cpu.github.io/clearstay-web/snapshot-v1.json" -o /tmp/prev-snapshot.json || true
+          if [ -s /tmp/prev-snapshot.json ]; then
+            python3 feed/build_snapshot.py --previous /tmp/prev-snapshot.json --out dist/snapshot-v1.json
+          else
+            python3 feed/build_snapshot.py --out dist/snapshot-v1.json
+          fi
+          ls -lh dist/
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

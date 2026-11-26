@@ -1,0 +1,17 @@
+{
+  "_comment": "Clearstay Live Briefings — Custom Emergency & Regional Broadcasts. Add entries to 'bulletins' to broadcast urgent travel, airspace, border, or maritime alerts to opted-in Clearstay apps. Leave 'bulletins' empty when no custom alert is active.",
+  "bulletins": [],
+  "_exampleEntry": {
+    "id": "airspace-example-2026-11",
+    "title": "Example: Regional Airspace Disruption",
+    "summary": "Check flight status before travelling to the airport. Airlines are rerouting flights around affected corridors.",
+    "severity": "high",
+    "category": "security",
+    "regionLabel": "Gulf & Levant",
+    "countryIsos": ["ARE", "QAT", "JOR"],
+    "publishedAtUtcMillis": 1795600000000,
+    "expiresAtUtcMillis": 1795772800000,
+    "sourceLabel": "Clearstay Broadcast",
+    "sourceUrl": "https://travel.state.gov"
+  }
+}

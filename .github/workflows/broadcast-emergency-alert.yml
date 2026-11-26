@@ -1,0 +1,132 @@
+name: Broadcast Emergency Alert
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (publish = add alert, clear_all = remove all custom alerts, remove_by_id = remove one)"
+        required: true
+        default: "publish"
+        type: choice
+        options:
+          - publish
+          - clear_all
+          - remove_by_id
+      alert_id:
+        description: "Alert ID (optional for publish; required for remove_by_id)"
+        required: false
+        default: ""
+      title:
+        description: "Headline (e.g. Regional Airspace Disruption)"
+        required: false
+        default: ""
+      severity:
+        description: "Severity level"
+        required: true
+        default: "high"
+        type: choice
+        options:
+          - critical
+          - high
+          - advisory
+          - info
+      category:
+        description: "Category"
+        required: true
+        default: "security"
+        type: choice
+        options:
+          - security
+          - weather
+          - health
+          - maritime
+          - general
+      country_isos:
+        description: "Comma-separated ISO-3 codes (e.g. ARE,QAT,JOR) — leave BLANK for Global"
+        required: false
+        default: ""
+      region_label:
+        description: "Short region label (e.g. Gulf & Levant, Western Med, Global)"
+        required: false
+        default: "Global"
+      summary:
+        description: "Short actionable alert body (max 400 chars)"
+        required: false
+        default: ""
+      expires_in_hours:
+        description: "Auto-expire after hours (default 48)"
+        required: false
+        default: "48"
+      source_url:
+        description: "Optional official HTTPS source URL"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: clearstay-pages
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update feed/emergency_bulletins.json
+        env:
+          INPUT_ACTION: ${{ inputs.action }}
+          INPUT_ALERT_ID: ${{ inputs.alert_id }}
+          INPUT_TITLE: ${{ inputs.title }}
+          INPUT_SEVERITY: ${{ inputs.severity }}
+          INPUT_CATEGORY: ${{ inputs.category }}
+          INPUT_COUNTRY_ISOS: ${{ inputs.country_isos }}
+          INPUT_REGION_LABEL: ${{ inputs.region_label }}
+          INPUT_SUMMARY: ${{ inputs.summary }}
+          INPUT_EXPIRES_HOURS: ${{ inputs.expires_in_hours }}
+          INPUT_SOURCE_URL: ${{ inputs.source_url }}
+        run: python3 feed/manage_bulletins.py
+
+      - name: Commit updated bulletins to main
+        run: |
+          git config user.name "Clearstay Broadcast Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add feed/emergency_bulletins.json
+          if ! git diff --cached --quiet; then
+            git commit -m "broadcast(${{ inputs.action }}): update emergency bulletins"
+            git push origin HEAD:main
+          fi
+
+      - name: Rebuild snapshot-v1.json and deploy immediately to GitHub Pages
+        run: |
+          mkdir -p dist
+          cp -r site/* dist/
+          touch dist/.nojekyll
+          curl -fsSL "https://rydlewiczc-cpu.github.io/clearstay-web/snapshot-v1.json" -o /tmp/prev-snapshot.json || true
+          if [ -s /tmp/prev-snapshot.json ]; then
+            python3 feed/build_snapshot.py --previous /tmp/prev-snapshot.json --out dist/snapshot-v1.json
+          else
+            python3 feed/build_snapshot.py --out dist/snapshot-v1.json
+          fi
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

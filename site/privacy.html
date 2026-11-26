@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — Clearstay</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./"><span class="brand-dot"></span>Clearstay</a>
+      <div class="nav-links">
+        <a href="./">Overview</a>
+        <a class="active" href="./privacy.html">Privacy Policy</a>
+        <a href="./support.html">Support</a>
+      </div>
+    </nav>
+
+    <div class="eyebrow">Privacy Policy · Last Updated November 2026</div>
+    <h1>Your travel history belongs only on your iPhone.</h1>
+
+    <div class="callout">
+      <strong>Short version:</strong> Clearstay does not have user accounts, does not run tracking servers, does not include third-party analytics or advertising SDKs, and never uploads your GPS coordinates, travel log, passport, or Vault files anywhere.
+    </div>
+
+    <h2>1. Data Collected by Clearstay</h2>
+    <p><strong>None.</strong> Clearstay collects zero personal data, zero usage analytics, zero crash telemetry, and zero device identifiers. All core tracking, residency calculations, calendar exports, and encrypted document storage execute 100% locally on your device.</p>
+
+    <h2>2. On-Device Location &amp; Photo Metadata</h2>
+    <ul>
+      <li><strong>Background &amp; Foreground GPS:</strong> Used exclusively on-device against bundled country and maritime Exclusive Economic Zone (EEZ) polygons to log daily presence. Coordinates never leave your iPhone.</li>
+      <li><strong>Optional Photo Backfill:</strong> If you choose to backfill travel history from your Photo Library, Clearstay reads photo GPS metadata locally on-device. Photo pixels are never uploaded and leave no external trace.</li>
+      <li><strong>Camera &amp; Document Scans:</strong> Passport MRZ scans, boarding pass barcode scans, and multi-page Vault PDFs are processed strictly on-device and encrypted with AES-256-GCM.</li>
+    </ul>
+
+    <h2>3. Local Encryption &amp; Backups</h2>
+    <ul>
+      <li>Your local SQLite database and encrypted Vault attachments are stored with iOS <code>NSFileProtectionComplete</code> and excluded from iCloud Backup.</li>
+      <li>Master encryption keys are stored in the iOS Keychain with <code>ThisDeviceOnly</code> accessibility (never synced to iCloud Keychain).</li>
+      <li>Encrypted <code>.dicbackup</code> archives use PBKDF2-HMAC-SHA256 (600,000 iterations) + AES-256-GCM with your user-held Recovery Key or passphrase. Clearstay has no backdoor and cannot decrypt your backup.</li>
+      <li>Explicit user-initiated exports (Audit PDF, CSV, Calendar ICS, Recovery Key Sheet) are generated locally on-device and shared only where you choose.</li>
+    </ul>
+
+    <h2>4. Optional Opt-In Live Briefings (OFF by Default)</h2>
+    <p>Clearstay includes an optional <strong>Live Briefings &amp; FX Converter</strong> feature that is <strong>turned OFF by default (0 bytes transmitted)</strong>.</p>
+    <ul>
+      <li>If you explicitly turn Live Briefings ON, Clearstay uses an isolated ephemeral HTTPS session (no cookies, no cache, no credentials, fixed generic headers) to download an identical static global snapshot (<code>snapshot-v1.json</code>) containing public exchange rates, official travel advisories, UN/EU GDACS severe disaster feeds, WHO Disease Outbreak News, and regional emergency bulletins.</li>
+      <li><strong>Zero location leakage:</strong> Your GPS coordinates, current country, planned trips, passport nationality, and device identifiers are <em>never</em> sent in any request. All filtering against your current country and upcoming trips happens 100% locally on your iPhone.</li>
+      <li>As with any standard HTTPS download on the internet, the static hosting provider (such as GitHub Pages or public feed hosts) sees standard network transport metadata (such as IP address) needed to deliver the static file.</li>
+      <li>Turning Live Briefings OFF immediately cancels background refresh and deletes the local snapshot cache from your iPhone.</li>
+    </ul>
+
+    <h2>5. Deleting Your Data</h2>
+    <p>Because Clearstay stores everything exclusively on your device, you have full control at all times. Use <strong>Settings → Wipe All Local Data</strong> to permanently erase your local database, encrypted Vault files, Keychain keys, and cached briefings, or uninstall the app.</p>
+
+    <h2>6. Contact</h2>
+    <p>Questions about this Privacy Policy? Reach us via our <a href="./support.html">Support page</a>.</p>
+
+    <footer>
+      <span>Clearstay iOS · Data Not Collected</span>
+      <span><a href="./">Overview</a> · <a href="./support.html">Support</a></span>
+    </footer>
+  </div>
+</body>
+</html>
